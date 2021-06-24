@@ -1,0 +1,11 @@
+containerd_templates:
+  - { src: "config.toml.j2", dst: "/etc/containerd/" }
+  - { src: "containerd.service.j2", dst: "/etc/systemd/system/" }
+  - { src: "10-bridge.conf.j2", dst: "/etc/cni/net.d/" }
+  - { src: "99-loopback.conf.j2", dst: "/etc/cni/net.d/" }
+containerd_directories:
+  - "/tmp/containerd"
+  - "/etc/containerd"
+  - "/tmp/cni"
+  - "/opt/cni/bin"
+  - "/etc/cni/net.d"
