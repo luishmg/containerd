@@ -74,21 +74,22 @@
   copy:
     src: '{{ item.src }}'
     dest: '{{ item.dest }}'
+    mode: '0640'
   loop:
     - { src: "containerd.conf", dest: "/etc/modules-load.d/" }
     - { src: "99-kubernetes-cri.conf", dest: "/etc/sysctl.d/" }
-    - { src: "config.toml", dst: "/etc/containerd/" }
-    - { src: "containerd.service", dst: "/etc/systemd/system/" }
+    - { src: "config.toml", dest: "/etc/containerd/" }
+    - { src: "containerd.service", dest: "/etc/systemd/system/" }
 
 - name: Adding containerd configuration and Service files
   template:
     src: '{{ item.src }}'
-    dest: '{{ item.dst + item.src.split(".")[0] + "." + item.src.split(".")[1] }}'
+    dest: '{{ item.dest + item.src.split(".")[-3] + "." + item.src.split(".")[-2] }}'
     owner: root
     mode: '0640' 
   loop:
-    - { src: "10-bridge.conf.j2", dst: "/etc/cni/net.d/" }
-    - { src: "99-loopback.conf.j2", dst: "/etc/cni/net.d/" }
+    - { src: "10-bridge.conf.j2", dest: "/etc/cni/net.d/" }
+    - { src: "99-loopback.conf.j2", dest: "/etc/cni/net.d/" }
 
 - name: Systemd reload
   ansible.builtin.systemd:
