@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+molecule = "3.3.4"
+molecule-vagrant = "0.6.3"
+molecule-inspec = "1.1"
+ansible = "4.2.0"
+python-vagrant = "0.5.15"
+molecule-libvirt = "0.0.4"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

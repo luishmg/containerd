@@ -1,0 +1,51 @@
+tmp_folder: "/tmp/tarfiles"
+
+download:
+  - name: cni_plugin
+    url: "{{ cni_plugin_url + cni_plugin_version +  '/cni-plugins-linux-amd64-' + cni_plugin_version + '.tgz' }}"
+    checksum: "{{ 'sha256:' + cni_plugin_url + cni_plugin_version +  '/cni-plugins-linux-amd64-' + cni_plugin_version + '.tgz.sha256' }}"
+    dest: "/tmp/tarfiles/"
+    mode: "0755"
+  - name: crictl
+    url: "{{ cri_url + cri_version + '/crictl-' + cri_version + '-linux-amd64.tar.gz' }}"
+    checksum: "{{ 'sha256:' + cri_url + cri_version + '/crictl-' + cri_version + '-linux-amd64.tar.gz.sha256' }}"
+    dest: "/tmp/tarfiles/"
+    mode: "0755"
+  - name: containerd
+    url: "{{ containerd_url + containerd_version + '/containerd-' + containerd_version + '-linux-amd64.tar.gz' }}"
+    checksum: "{{ 'sha256:' + containerd_url + containerd_version + '/containerd-' + containerd_version + '-linux-amd64.tar.gz.sha256sum' }}"
+    dest: "/tmp/tarfiles/"
+    mode: "0755"
+  - name: runc
+    url: "{{ runc_url + runc_version + '/runc.amd64' }}"
+    checksum: "{{ 'sha256:' + runc_url + runc_version + '/runc.sha256sum' }}"
+    dest: "/usr/local/bin/runc"
+    mode: "0755"
+
+untar_files:
+  - name: cni_plugin
+    src: "{{ tmp_folder + '/cni-plugins-linux-amd64-' + cni_plugin_version + '.tgz' }}"
+    dest: "/opt/cni/bin/"
+    extra: ""
+  - name: crictl
+    src: "{{ tmp_folder + '/crictl-' + cri_version + '-linux-amd64.tar.gz' }}"
+    dest: "/usr/local/bin/"
+    extra: ""
+  - name: containerd
+    src: "{{ tmp_folder + '/containerd-' + containerd_version + '-linux-amd64.tar.gz' }}"
+    dest: "/bin/"
+    extra: "--strip,1,bin/"
+
+folders:
+  - name: containerd
+    path: "/etc/containerd"
+    mode: "0755"
+  - name: cni_bin
+    path: "/opt/cni/bin"
+    mode: "0775"
+  - name: cni_net
+    path: "/etc/cni/net.d"
+    mode: "0755"
+  - name: tmp
+    path: "{{ tmp_folder }}"
+    mode: "0755"

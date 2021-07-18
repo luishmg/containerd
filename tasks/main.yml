@@ -1,80 +1,56 @@
 ---
-- name: Create worker directories
-  file:
-    path: '{{ item }}'
-    state: directory
-    mode: '0755'
+- name: Installing containerd dependencie packages
+  yum:
+    name: "{{ item }}"
+    state: latest
   loop:
-    - "/tmp/containerd"
-    - "/etc/containerd"
-    - "/tmp/cni"
-    - "/opt/cni/bin"
-    - "/etc/cni/net.d"
-
+    - "conntrack"
+    - "ipset"
+    - "socat"
+  
 - name: Adding kernel modules
   modprobe:
-    name: '{{ item }}'
+    name: "{{ item }}"
     state: present
   loop:
     - overlay
     - br_netfilter
+    - nf_conntrack
 
-- name: Download cni-plugin
-  get_url:
-    url: '{{ cni_plugin_url + "cni-plugins-linux-amd64-" + cni_plugin_version + ".tgz" }}'
-    dest: /tmp/cni/cni-plugin.tar.gz
-    mode: '0755'
-
-- name: Extracting cni plugin files
-  unarchive:
-    src: /tmp/cni/cni-plugin.tar.gz
-    dest: /opt/cni/bin/
-    remote_src: true
-
-- name: Cleaning downloaded files
+- name: Create folders
   file:
-    path: '/tmp/cni/'
-    state: absent
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+  loop:
+    "{{ folders }}"
 
-- name: Download containerd tarball's
+- name: Download containerd and dependecies binaries
   get_url:
-    url: '{{ item }}'
-    dest: /tmp/containerd/
-    mode: '0755'
-  loop: 
-    - '{{ containerd_cri_url + "crictl-" + containerd_cri_version + "-linux-amd64.tar.gz" }}'
-    - '{{ containerd_url + "containerd-" + containerd_version + "-linux-amd64.tar.gz" }}'
+    url: "{{ item.url }}"
+    checksum: "{{ item.checksum }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  loop:
+    # Generated on the default
+    "{{ download }}"
 
-- name: Extracting containerd files
+- name: Extracting containerd and dependecies
   unarchive:
-    src: '{{ item.src }}'
-    dest: '{{ item.dst }}'
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     remote_src: true
     extra_opts:
-      '{{ item.extra.split(",") | default("") }}'
+      "{{ item.extra.split(',') | default('') }}"
   loop:
-    - { src: '{{ "/tmp/containerd/crictl-" + containerd_cri_version + "-linux-amd64.tar.gz" }}', dst: "/usr/local/bin/", extra: "" }
-    - { src: '{{ "/tmp/containerd/containerd-" + containerd_version + "-linux-amd64.tar.gz" }}', dst: "/bin", extra: "--strip,1,bin/" }
-
-- name: Download runc bin
-  get_url:
-    url: '{{ item.src }}'
-    dest: '{{ item.dst }}'
-    mode: '0755'
-  loop: 
-    - { src: '{{ containerd_runc_url + containerd_runc_version + "/runc.amd64" }}', dst: "/usr/local/bin/runc" }
-
-- name: Cleaning containerd downloaded files
-  file:
-    path: '/tmp/containerd'
-    state: absent
-
+    # Generated on the default
+    "{{ untar_files }}"
 
 - name: Copy containerd config files
   copy:
-    src: '{{ item.src }}'
-    dest: '{{ item.dest }}'
-    mode: '0640'
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0640"
   loop:
     - { src: "containerd.conf", dest: "/etc/modules-load.d/" }
     - { src: "99-kubernetes-cri.conf", dest: "/etc/sysctl.d/" }
@@ -83,10 +59,10 @@
 
 - name: Adding containerd configuration and Service files
   template:
-    src: '{{ item.src }}'
-    dest: '{{ item.dest + item.src.split(".")[-3] + "." + item.src.split(".")[-2] }}'
+    src: "{{ item.src }}"
+    dest: "{{ item.dest + item.src.split('.')[-3] + '.' + item.src.split('.')[-2] }}"
     owner: root
-    mode: '0640' 
+    mode: "0640" 
   loop:
     - { src: "10-bridge.conf.j2", dest: "/etc/cni/net.d/" }
     - { src: "99-loopback.conf.j2", dest: "/etc/cni/net.d/" }
@@ -99,3 +75,4 @@
   ansible.builtin.systemd:
     name: containerd
     enabled: yes
+    state: started
