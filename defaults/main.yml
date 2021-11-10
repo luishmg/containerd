@@ -1,4 +1,8 @@
 tmp_folder: "/tmp/tarfiles"
+cri_url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/"
+runc_url: "https://github.com/opencontainers/runc/releases/download/"
+cni_plugin_url: "https://github.com/containernetworking/plugins/releases/download/"
+containerd_url: "https://github.com/containerd/containerd/releases/download/v"
 
 download:
   - name: cni_plugin
